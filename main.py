@@ -40,9 +40,29 @@ def getid():
 
 @app.route('/version-id')
 def getversionid():
-    addVisitor()
     versionid = os.getenv('GAE_VERSION')
     return str(versionid)
+
+def addVisitor():
+    ent = dataclient.key('data', 'visitors')
+    total = dataclient.get(key=ent)
+    if total:
+        total['total'] += 1
+        dataclient.put(total)
+    else:
+        total = datastore.Entity(key=ent)
+        total['total'] = 0
+        dataclient.put(total)
+
+@app.route('/visitors')
+def getVisitor():
+    addVisitor()
+    ent = dataclient.key('data', 'visitors')
+    total = dataclient.get(key=ent)
+    if total:
+        return 'Total Visitors: ' + str(total['total'])
+    else:
+        return 'Total Broke!'
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
